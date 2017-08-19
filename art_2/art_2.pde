@@ -87,15 +87,21 @@ void draw() {
 
     for (int i = 0; i < randomRows.length; i++) {
       int row = randomRows[i];
-      float cx = width/2.0;
-      float cy = height/2.0;
-      float r = row * 360/data.length();
+      //float cx = width/2.0;
+      //float cy = height/2.0;
+      float cx = 1;
+      float cy = 0.5 * height + 0.9 * height * row/data.length();
+      //float r = row * 360/data.length();
+      //float dx = sin(radians(r)) * 20;
+      //float dy = cos(radians(r)) * 20;
+      
+      float dx = 10;
       randomSeed(row);
-      float dx = sin(radians(r  + random(-3.1, 3.1) * frameCount%90)) * 20;
-      float dy = cos(radians(r)) * 20;
+      float dy = random(-.1, .1) * frameCount % 90;
+      
       float px = 0;
       float py = 0;
-
+    
 
       stroke(getColour(row));
       //fill(getColour(row));
@@ -111,9 +117,9 @@ void draw() {
         px = cx;
         py = cy;
         noiseSeed(int(we * count * 10));
-        cx += dx + noise(frameCount + count)/8 * we;
+        cx += dx + noise(frameCount + count)/5 * we;
         noiseSeed(int(wa * hi * count * 5));
-        cy += dy + noise(frameCount + count)/8 * we;
+        cy += dy + noise(frameCount + count)/28 * we;
         if (isSmoker(row)) {
           ellipse(cx, cy, wa*10, hi*5);
         } 
@@ -154,9 +160,7 @@ boolean isSmoker(int r) {
 
 void updateRows() {
   for (int i = 0; i < randomRows.length-1; i++) {
-    println(i);
     randomRows[i] = randomRows[i+1];
   }
-  println(randomRows.length-1);
   randomRows[randomRows.length-1] = int(random(data.length()));
 }
