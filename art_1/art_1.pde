@@ -2,8 +2,6 @@ import hivis.common.*;
 import hivis.data.*;
 import hivis.data.reader.*;
 import hivis.data.view.*;
-//import controlP5.*;
-//import java.util.*;
 
 // The source data
 DataTable data;
@@ -12,10 +10,10 @@ DataTable data;
 // This is a flag to indicate that data is being (re)loaded and so the plot should not be drawn yet.
 boolean noDataLoaded = true;
 
-DataSeries<Float> heightSeries;
-DataSeries<Float> weightSeries;
-DataSeries<Float> waistSeries;
-DataSeries<Float> BMISeries;
+DataSeries heightSeries;
+DataSeries weightSeries;
+DataSeries waistSeries;
+DataSeries BMISeries;
 String[] smokerSeries;
 
 int alpha = 15;
@@ -39,15 +37,15 @@ void fileSelected(File selection) {
   } else {
     // Get data from spread sheet. The SpreadSheetReader will automatically update the DataTable it provides.
     println("loading data");
-    data = HV.loadSpreadSheet(selection, 0, 0, 1, 0);
+    data = HV.loadSpreadSheet(HV.loadSSConfig().sourceFile(selection));
 
     println("\nLoaded data:\n" + data);
-
-    heightSeries = data.getSeries("height").asFloat();
-    weightSeries = data.getSeries("weight").asFloat();
-    waistSeries = data.getSeries("waist").asFloat();
-    BMISeries = data.getSeries("bmi").asFloat();
-    smokerSeries = data.getSeries("smoker").asStringArray();
+    
+    heightSeries = data.get("height");
+    weightSeries = data.get("weight");
+    waistSeries = data.get("waist");
+    BMISeries = data.get("bmi");
+    smokerSeries = data.get("smoker").asStringArray();
     noDataLoaded = false;
     randomRows = new int[numRows];
     for (int i = 0; i < numRows; i++) {
@@ -58,7 +56,6 @@ void fileSelected(File selection) {
   }
   
   noFill();
-  //stroke(0, 1);
   strokeWeight(3);
 }
 
@@ -73,18 +70,18 @@ void draw() {
   
   filter(BLUR, .7);
   
-  //println(frameCount);
+  ////println(frameCount);
   if (noDataLoaded) {
     selectInput("Select an excel file to visualise:", "fileSelected", sketchFile("NCHS_dataset.xlsx"));
   } 
   
   else {
-    
+
     if (frameCount % 30 == 0) {
       println("updating rows");
       updateRows();
     }
-
+   
     for (int i = 0; i < randomRows.length; i++) {
       int row = randomRows[i];
       float cx = width/2.0;
@@ -98,11 +95,10 @@ void draw() {
 
 
       stroke(getColour(row));
-      //fill(getColour(row));
-
-      float we = weightSeries.get(row);
-      float wa = waistSeries.get(row);
-      float hi = heightSeries.get(row);
+      
+      float we = weightSeries.getFloat(row);
+      float wa = waistSeries.getFloat(row);
+      float hi = heightSeries.getFloat(row);
 
       float count = 0;
       while (onScreen(cx, cy)) {
@@ -123,6 +119,7 @@ void draw() {
       }
     }
   }
+
 }
 
 
@@ -137,8 +134,9 @@ boolean onScreen(float x, float y) {
 
 
 color getColour(int r) {
-
-  float bmi = (BMISeries.get(r) - BMISeries.minValue())/BMISeries.maxValue() * 200 + 150;
+  float min = BMISeries.min().getFloat();
+  float max = BMISeries.max().getFloat();
+  float bmi = (BMISeries.getFloat(r) - min)/max * 200 + 150;
   color c = color(bmi, 200, 220, alpha * 2);
   return c;
 }
@@ -154,9 +152,7 @@ boolean isSmoker(int r) {
 
 void updateRows() {
   for (int i = 0; i < randomRows.length-1; i++) {
-    println(i);
     randomRows[i] = randomRows[i+1];
   }
-  println(randomRows.length-1);
   randomRows[randomRows.length-1] = int(random(data.length()));
 }
